@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Competition {
+  id          Int             @id @default(autoincrement())
+  name        String          @default("")
+  cost        Int
+  type        CompetitionType
+  Participant Participant[]
+
+  @@map("competition")
+}
+
+model Admin {
+  id       Int    @id @default(autoincrement())
+  username String
+  password String
+
+  @@map("admin")
+}
+
+model Registration {
+  id          Int           @id @default(autoincrement())
+  classroom   String
+  classLeader String        @map("class_leader")
+  nim         String
+  contact     String
+  email       String
+  status      RegistrationStatus @default(PENDING)
+  Participant Participant[]
+
+  @@map("registration")
+}
+
+model Participant {
+  id             Int          @id @default(autoincrement())
+  registrationId Int          @map("registration_id")
+  name           String
+  nim            String
+  contact        String
+  competitionId  Int          @map("competition_id")
+  Competition    Competition  @relation(fields: [competitionId], references: [id])
+  Registration   Registration @relation(fields: [registrationId], references: [id])
+
+  @@map("participant")
+}
+
+enum CompetitionType {
+  INDIVIDUAL
+  TEAM
+}
+
+enum RegistrationStatus {
+  APPROVED
+  PENDING
+  REJECT
+}
